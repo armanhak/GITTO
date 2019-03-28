@@ -1,0 +1,14 @@
+{% extends "dappx/index.html" %}
+{% block body_block %}
+
+<div class="container">
+  <div class="jumbotron">
+    
+    
+        <h1>Вы вошли как врач!</h1>        
+        <input type="button" value="Добавить анкету" class="button_active" onclick="location.href='{% url 'dappx:addprofile' %}';" />        
+    
+  </div>
+</div>
+
+{% endblock %}

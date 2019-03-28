@@ -1,0 +1,17 @@
+{% extends "dappx/base.html" %}
+{% block body_block %}
+
+<div class="container">
+  <div class="jumbotron">
+    
+    
+        <h2>Войти как...</h2>
+        
+        <ul class="nav navbar-nav">
+          <li><a class="navbar-link" href="{% url 'dappx:resercher' %}">Исследователь</a></li>
+          <li><a class="navbar-link" href="{% url 'dappx:doctor' %}">Врач</a></li> </ul>
+    
+  </div>
+</div>
+
+{% endblock %}
