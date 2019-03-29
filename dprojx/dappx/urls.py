@@ -9,5 +9,6 @@ urlpatterns=[
     url(r'^resercher_doctor/$',views.resercher_doctor,name='resercher_doctor'),
     url(r'^resercher_doctor/doctor/$',views.doctor,name='doctor'),
     url(r'^resercher_doctor/resercher/$',views.resercher,name='resercher'),
-    url(r'resercher_doctor/doctor/addProfile/$', views.addprofile, name='addprofile'),
+    url(r'^resercher_doctor/doctor/addProfile/$', views.addprofile, name='addprofile'),
+    url(r'resercher_doctor/doctor/addProfile/add_to_db_Profile/', views.db_add_profile, name='db_add_profile'),
 ]

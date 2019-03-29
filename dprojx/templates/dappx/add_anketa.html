@@ -1,47 +1,37 @@
 {% extends "dappx/index.html" %}
 {% block body_block %}
-<div class="container">
-  <div class="jumbotron">
+
     
     
-        <!-- <h2>Создание анкеты</h2>
-        <p>Введите дату поступления</p>
-        <input type="datetime-local" value="">
-        <h2>ПОСТУЛЕНИЕ/ ПОТОЛИЯ</h2>
-        <h3>Основная патология</h3>
-        {% for i in models.qusetions %}
-        <tr class='success'>
-        	<td>{{ i.qusetion_name }}</td>
-        	
-        	</tr>
-        	{% endfor %}одтдо -->
+<form action = 'add_to_db_Profile/', method="POST">   
+<!-- {%csrf_token%}      -->
 {% if quest.count > 0 %}
 <h2>Заполнение анкеты</h2>
 <table>
-
     {% for qu in quest %}
-        <ul> {{qu.question_name }} </ul>
-        {% if qu.question_name == "Дата рождения" %}
-            <ul> <input type="datetime-local" value=""> </ul>
+        <div class = '{{qu.id}}'>
+        <ul id = {{qu.id}}> {{qu.question_name }} </ul>
+        {% if qu.question_type == "Date" %}
+           <input type="date" name="question{{qu.id}}_date" value=""> 
         {% else %}
 
-            <select>        
+            <select name ="question{{qu.id}}">        
                 {% for o in option %}
                     {% if o.question.id == qu.id %}
-                        <option value={{ qu.id }}>{{ o.option_name }}</option>
+                        <option value={{ o.option_id }}>{{ o.option_name }}</option>
                     {% endif %}
                 {% endfor %}    
             </select>
         {% endif %}
+        </div>
     {% endfor %}
 
 </table><br>
 
 <input type="submit" value="Сохранить" >
 {% endif %}
-
+</form>
 
     
-  </div>
-</div>
+
 {% endblock %}

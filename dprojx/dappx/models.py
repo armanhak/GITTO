@@ -23,8 +23,9 @@ class options_selection(models.Model):
 		db_table = 'options_selection'
 		unique_together = (('question', 'option_id'),)
 class surveys(models.Model):
+	survey_id = models.IntegerField()
 	question = models.ForeignKey(questions, on_delete=models.CASCADE)
-	question_answer = models.IntegerField()
+	option_id = models.IntegerField()
 	class Meta:
 		db_table = 'surveys'
 class raw_text_answer(models.Model):
@@ -35,4 +36,3 @@ class date_answers(models.Model):
 	date_value = models.DateField()
 	class Meta:
 		db_table = 'date_answers'
-	

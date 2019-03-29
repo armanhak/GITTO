@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from dappx.models import questions, options_selection
+from dappx.models import questions, options_selection, surveys
 
 
 def index(request):
@@ -84,3 +84,20 @@ def create(request):
         q.question_type =  request.POST.get("question_type")
         q.save()
     return HttpResponse('Success')
+def db_add_profile(request):
+    if request.method == "POST":
+    # surveys_id = request.POST['']
+        # anket_date = request.POST.get("anketdate")
+        option_id = request.POST.get("question1")
+        quest = questions.objects.all()
+        surv = surveys.objects.all()
+        if len(surv) == 0:
+            survey_id = 1
+        else:
+            survey_id = surv.last().survey_id+1
+        for num_quest in range(2, len(quest)+1):
+            option_id = request.POST.get("question"+str(num_quest))
+            surv = surveys(survey_id = survey_id, question_id = num_quest, option_id = option_id)
+            surv.save()
+        # question_answer =request.POST['value']#option_id or row_text_answer_id or date_answer_id
+        return HttpResponse("Данные успешно загружены в базу данных")
