@@ -23,9 +23,12 @@ MEDIA_DIR = os.path.join(BASE_DIR,'media')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'w3e45@j&v)6hq_2h(js+xe#j_d!x#818x!+l$)k5*@ds0$n8uv'
+# import os
+# SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'w3e45@j&v)6hq_2h(js+xe#j_d!x#818x!+l$)k5*@ds0$n8uv')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = bool( os.environ.get('DJANGO_DEBUG', True) )
 
 ALLOWED_HOSTS = []
 
