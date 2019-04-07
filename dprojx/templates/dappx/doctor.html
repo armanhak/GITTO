@@ -1,27 +1,25 @@
 {% extends "dappx/index.html" %}
-{% block body_block %}
-
-    
+{% block body_block %}    
     
         <h1>Вы вошли как врач!</h1>        
         <input type="button" value="Добавить анкету" class="button_active" onclick="location.href='{% url 'dappx:addprofile' %}';" /> 
        
         <table border="1" width="70%">
         	<tr>
-        	{% for k in dic.1 %}
-        		<th>{{k}}</th>
+        	{% for question in dic.1 %}
+        		<th>{{question}}</th>
         	{% endfor %}
         	</tr>
-        	{% for k,v in dic.items %}
+        	{% for surv_number, quest_ans in dic.items %}
         		<tr>
-        			{% for q,ans in v.items %}        			
-        				<td> {{ans}}</td>
+        			{% for quest,anser in quest_ans.items %}        			
+        				<td> {{anser}}</td>
         			{% endfor %}
         		</tr>     				
         		   		
       		{% endfor %}
        
-        </table>		
+        </table>	
 
 
 {% endblock %}

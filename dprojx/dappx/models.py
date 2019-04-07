@@ -32,28 +32,26 @@ class date_answers(models.Model):
 class surveys(models.Model):
 	survey_id = models.IntegerField()
 	question = models.ForeignKey(questions, on_delete=models.CASCADE)
-	# в answ_sel_id указывается forKey но не используется, дольжно быть просто integerField
-	answer_sel_id = models.IntegerField(null=True, blank=True)
-	o_id = models.ForeignKey(options_selection, null=True, blank=True, on_delete=models.CASCADE)
-	# answer_sel_id = models.ForeignKey(options_selection,null=True, blank=True, on_delete=models.CASCADE)
-	answer_date_id = models.ForeignKey(date_answers, null=True, blank=True, on_delete=models.CASCADE)
+	option = models.ForeignKey(options_selection, null=True, blank=True, on_delete=models.CASCADE)
+	date_answer = models.ForeignKey(date_answers, null=True, blank=True, on_delete=models.CASCADE)
 	@property
 	def answer_fill(self):
 		if self.answer_sel_id is not None:
 			answer = self.answer_sel_id
-		if self.answer_date_id is not None:
-			answer = self.answer_date_id
+		if self.date_answer is not None:
+			answer = self.date_answer
 	@property
 	def answer_id(self):
 		if self.answer_sel_id is not None:
 			return self.answer_sel_id
-		if self.answer_date_id is not None:
-			return self.answer_date_id
-		# raise AssertionError(«Neither ‘answer_sel_id’ nor ‘answer_date_id’ is set»)
+		if self.date_answer is not None:
+			return self.date_answer
+		# raise AssertionError(«Neither ‘answer_sel_id’ nor date_answer is set»)
 	
 
 	class Meta:
 		db_table = 'survey'
+
 class raw_text_answer(models.Model):
 	answer_text = models.TextField()
 	class Meta: 
