@@ -64,8 +64,66 @@ def user_login(request):
 @login_required
 def resercher_doctor(request):
     return render(request, 'dappx/Resercher_doctor.html')
+
 @login_required
 def doctor(request):
+    return render(request, 'dappx/doctor.html')
+
+@login_required
+def resercher(request):
+    return render(request, 'dappx/resercher.html')
+@login_required
+# def addprofile(request):
+
+
+def addprofile(request):
+    quest = questions.objects.all()
+    option = options_selection.objects.all()
+    return render(request, 'dappx/add_anketa.html', {"quest": quest, 'option': option})
+
+def db_add_profile(request):
+    if request.method == "POST":
+
+    # surveys_id = request.POST['']
+        quest = questions.objects.all()
+        surv = surveys.objects.all()
+        date_ans = date_answers.objects.all()
+
+        if len(surv) == 0:
+            survey_id = 1
+        else:
+            survey_id = surv.last().survey_id+1
+
+        for num_quest in range(1, len(quest)+1):
+            if quest.values_list('question_type', flat=True).get(pk = num_quest) == 'Date':
+                anket_date = request.POST.get("question1_date")
+                date_ans = date_answers(date_value = anket_date, question_id = num_quest)
+                date_ans.save()
+                surv = surveys(survey_id = survey_id, question_id = num_quest, date_answer_id = date_ans.id)
+                surv.save()
+            else:
+                option = options_selection.objects.all()
+                option_id = request.POST.get("question"+str(num_quest))
+                oid = option.filter(option_id = option_id).filter(question_id = num_quest).only('id')[0]
+                surv = surveys(survey_id = survey_id, question_id = num_quest,option = oid)
+                surv.save()
+        # question_answer =request.POST['value']#option_id or row_text_answer_id or date_answer_id
+        return render(request, 'dappx/doctor.html')
+#Функуция удаления
+def delete(request, id):
+    try:
+        quest = questions.objects.get(id=id)
+        surv = surveys.objects.get(id=id)
+        date_ans = date_answers.objects.get(id=id)
+
+        quest.delete()
+        surv.delete()
+        date_ans.delete()
+        return HttpResponseRedirect("resercher_doctor/doctor/addProfile/")
+    except Person.DoesNotExist:
+        return HttpResponseNotFound("<h2>Person not found</h2>")
+
+def saved_ankets(request):
     surv = surveys.objects.all()
     #Select * from surveys left join questions, question это внешный ключ в surveys
     surv_quest = surveys.objects.select_related('question')
@@ -86,44 +144,4 @@ def doctor(request):
                     da = surv_date.filter(date_answer_id = surv_row.date_answer_id)[0].date_answer.date_value
                     ans_sel = da
                     dic[surv_row_unique.survey_id][q] = ans_sel
-    return render(request, 'dappx/doctor.html', {"surv": surv, "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
-@login_required
-def resercher(request):
-    return render(request, 'dappx/resercher.html')
-@login_required
-# def addprofile(request):
-
-
-def addprofile(request):
-    quest = questions.objects.all()
-    option = options_selection.objects.all()
-    return render(request, 'dappx/add_anketa.html', {"quest": quest, 'option': option})
-
-def db_add_profile(request):
-    if request.method == "POST":
-
-    # surveys_id = request.POST['']
-        quest = questions.objects.all()
-        surv = surveys.objects.all()
-        date_ans = date_answers.objects.all()
-               
-        if len(surv) == 0:
-            survey_id = 1
-        else:
-            survey_id = surv.last().survey_id+1
-
-        for num_quest in range(1, len(quest)+1):
-            if quest.values_list('question_type', flat=True).get(pk = num_quest) == 'Date':
-                anket_date = request.POST.get("question1_date")
-                date_ans = date_answers(date_value = anket_date, question_id = num_quest)
-                date_ans.save()
-                surv = surveys(survey_id = survey_id, question_id = num_quest, date_answer_id = date_ans.id)
-                surv.save()
-            else:
-                option = options_selection.objects.all()
-                option_id = request.POST.get("question"+str(num_quest))
-                oid = option.filter(option_id = option_id).filter(question_id = num_quest).only('id')[0]
-                surv = surveys(survey_id = survey_id, question_id = num_quest,option = oid)
-                surv.save()
-        # question_answer =request.POST['value']#option_id or row_text_answer_id or date_answer_id
-        return HttpResponse("Данные успешно загружены в базу данных")
+    return render(request, 'dappx/saved_ankets.html', {"surv": surv, "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})

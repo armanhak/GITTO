@@ -1,25 +1,8 @@
 {% extends "dappx/index.html" %}
-{% block body_block %}    
-    
-        <h1>Вы вошли как врач!</h1>        
-        <input type="button" value="Добавить анкету" class="button_active" onclick="location.href='{% url 'dappx:addprofile' %}';" /> 
-       
-        <table border="1" width="70%">
-        	<tr>
-        	{% for question in dic.1 %}
-        		<th>{{question}}</th>
-        	{% endfor %}
-        	</tr>
-        	{% for surv_number, quest_ans in dic.items %}
-        		<tr>
-        			{% for quest,anser in quest_ans.items %}        			
-        				<td> {{anser}}</td>
-        			{% endfor %}
-        		</tr>     				
-        		   		
-      		{% endfor %}
-       
-        </table>	
+{% block body_block %}
 
+        <h1>Вы вошли как врач!</h1>
+        <input type="button" value="Добавить анкету" class="button_active" onclick="location.href='{% url 'dappx:addprofile' %}';" />
+        <input type="button" value="Cохранённые анкеты" class="button_active" onclick="location.href='{% url 'dappx:saved_ankets' %}';" />
 
 {% endblock %}

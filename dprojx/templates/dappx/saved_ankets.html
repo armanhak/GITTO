@@ -1,0 +1,26 @@
+{% extends "dappx/index.html" %}
+{% block body_block %}
+
+      <h1>Сохраненные анкеты: </h1>
+
+        <table border="1" width="70%">
+        	<tr>
+        	{% for question in dic.1 %}
+        		<th>{{question}}</th>
+        	{% endfor %}
+        	</tr>
+        	{% for surv_number, quest_ans in dic.items %}
+        		<tr>
+        			{% for quest,anser in quest_ans.items %}
+        				<td> {{anser}}</td>
+
+        			{% endfor %}
+        <!--Удаление-->      <td><a href="delete/{{qu.id}}">Удалить</a></td>
+        		</tr>
+
+      		{% endfor %}
+
+        </table>
+
+        <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />
+{% endblock %}
