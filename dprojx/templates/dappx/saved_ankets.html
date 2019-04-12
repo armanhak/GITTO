@@ -1,26 +1,51 @@
 {% extends "dappx/index.html" %}
 {% block body_block %}
+    {% if surv.count > 0 %}
+        <script language="JavaScript">
+            function toggle(source) {
+                checkboxes = document.getElementsByName('checks[]');
+                for(var i=0, n=checkboxes.length;i<n;i++) {
+                    checkboxes[i].checked = source.checked;
+                }
+            }
+        
+        </script>
+        
 
       <h1>Сохраненные анкеты: </h1>
-
+      
+      <form action="delete" method="POST">
         <table border="1" width="70%">
-        	<tr>
-        	{% for question in dic.1 %}
-        		<th>{{question}}</th>
-        	{% endfor %}
+        	<tr>                
+                <th><input type="checkbox" onClick="toggle(this)" />Выбрать все<br/></th>
+        	   {% for question in HEADER_DIC.0 %}
+        		  <th>{{ question }}</th>
+        	   {% endfor %}
         	</tr>
-        	{% for surv_number, quest_ans in dic.items %}
+        	{% for surv_number, quest_ans in dic.items %}                
         		<tr>
+                    <td><input type="checkbox" name="checks[]", value={{ surv_number }}></td>
         			{% for quest,anser in quest_ans.items %}
-        				<td> {{anser}}</td>
-
+        				<td name = "", value = {{surv_number}}> {{anser}}</td>
         			{% endfor %}
-        <!--Удаление-->      <td><a href="delete/{{qu.id}}">Удалить</a></td>
         		</tr>
-
       		{% endfor %}
-
         </table>
 
-        <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />
+        <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />        
+        <input type="submit" value="Удалить"/>
+        <input type="button" value="Сохранить в xlsx" class="button_active"/>
+        </form>
+
+        {% else %}
+            <h1>Нет сохраненных анкет</h1>
+            <table border="1" width="70%">
+            {% for i in q %}
+                <th>{{ i.question_name }}</th>
+            {% endfor %}
+        </table>
+        <input type="button" value="Добавить анкету" class="button_active" onclick="location.href='{% url 'dappx:addprofile' %}';" />
+        {% endif %} 
+         
+        
 {% endblock %}

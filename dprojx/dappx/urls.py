@@ -11,7 +11,9 @@ urlpatterns=[
     url(r'^resercher_doctor/resercher/$',views.resercher,name='resercher'),
     url(r'^resercher_doctor/doctor/addProfile/$', views.addprofile, name='addprofile'),
     url(r'resercher_doctor/doctor/addProfile/add_to_db_Profile/', views.db_add_profile, name='db_add_profile'),
-    url(r'resercher_doctor/doctor/addProfile/saved_ankets', views.saved_ankets, name='saved_ankets'),
+
+    url(r'resercher_doctor/doctor/addProfile/saved_ankets/$', views.saved_ankets, name='saved_ankets'),
     #Ccылка для удаления
-    url(r'/resercher_doctor/doctor/addProfile/saved_ankets/delete/<int:id>/', views.delete),
+    url(r'^resercher_doctor/doctor/addProfile/saved_ankets/delete$', views.deletes, name = 'del'),
+    # (?# url(r'^resercher_doctor/doctor/addProfile/saved_ankets/exp$', views.exportFile, name = 'exp'),)
 ]

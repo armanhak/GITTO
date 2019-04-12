@@ -4,6 +4,7 @@ from dappx.forms import UserForm,UserProfileInfoForm
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+# from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from dappx.models import questions, options_selection, surveys, date_answers
 from django.db.models import F
@@ -64,11 +65,30 @@ def user_login(request):
 @login_required
 def resercher_doctor(request):
     return render(request, 'dappx/Resercher_doctor.html')
-
 @login_required
 def doctor(request):
     return render(request, 'dappx/doctor.html')
-
+    # surv = surveys.objects.all()
+    # #Select * from surveys left join questions, question это внешный ключ в surveys
+    # surv_quest = surveys.objects.select_related('question')
+    # surv_date = surveys.objects.select_related('date_answer')
+    # surv_opt = surveys.objects.select_related('option')
+    # surv_count = surv_opt.distinct('survey_id')
+    # # Добавим в словарь {1: {вопрос1: ответ1, вопрос2: ответ2,...}, 2:{вопрос1: ответ1,...}...}
+    # dic =  {}
+    # for surv_row_unique in surv_opt.distinct('survey_id'):
+    #     dic[surv_row_unique.survey_id] = {}
+    #     for surv_row in surv_opt:
+    #         if surv_row_unique.survey_id == surv_row.survey_id:
+    #             q = surv_quest.filter(question_id = surv_row.question_id)[0].question.question_name
+    #             if surv_row.option:
+    #                 ans_sel = surv_row.option.option_name
+    #                 dic[surv_row_unique.survey_id][q] = ans_sel
+    #             elif surv_row.date_answer:
+    #                 da = surv_date.filter(date_answer_id = surv_row.date_answer_id)[0].date_answer.date_value
+    #                 ans_sel = da
+    #                 dic[surv_row_unique.survey_id][q] = ans_sel
+    # return render(request, 'dappx/doctor.html', {"surv": surv, "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
 @login_required
 def resercher(request):
     return render(request, 'dappx/resercher.html')
@@ -80,6 +100,7 @@ def addprofile(request):
     quest = questions.objects.all()
     option = options_selection.objects.all()
     return render(request, 'dappx/add_anketa.html', {"quest": quest, 'option': option})
+@login_required
 
 def db_add_profile(request):
     if request.method == "POST":
@@ -88,7 +109,7 @@ def db_add_profile(request):
         quest = questions.objects.all()
         surv = surveys.objects.all()
         date_ans = date_answers.objects.all()
-
+               
         if len(surv) == 0:
             survey_id = 1
         else:
@@ -109,20 +130,23 @@ def db_add_profile(request):
                 surv.save()
         # question_answer =request.POST['value']#option_id or row_text_answer_id or date_answer_id
         return render(request, 'dappx/doctor.html')
-#Функуция удаления
-def delete(request, id):
-    try:
-        quest = questions.objects.get(id=id)
-        surv = surveys.objects.get(id=id)
-        date_ans = date_answers.objects.get(id=id)
+        # return HttpResponse("Данные успешно загружены в базу данных")
+@login_required
+def deletes(request):    
+    if request.method == "POST":        
+        cheked_survs = request.POST.getlist('checks[]')
+        if len(cheked_survs) > 0:
+            for i in cheked_survs:
+                s = surveys.objects.filter(survey_id = i)
+                s.delete()
+            # return HttpResponse("erfws")
+            return render(request, 'dappx/doctor.html')
+        if len(cheked_survs) ==0:
+            return render(request, "dappx/doctor.html")
 
-        quest.delete()
-        surv.delete()
-        date_ans.delete()
-        return HttpResponseRedirect("resercher_doctor/doctor/addProfile/")
-    except Person.DoesNotExist:
-        return HttpResponseNotFound("<h2>Person not found</h2>")
-
+    
+        
+@login_required
 def saved_ankets(request):
     surv = surveys.objects.all()
     #Select * from surveys left join questions, question это внешный ключ в surveys
@@ -130,9 +154,15 @@ def saved_ankets(request):
     surv_date = surveys.objects.select_related('date_answer')
     surv_opt = surveys.objects.select_related('option')
     surv_count = surv_opt.distinct('survey_id')
+    q = questions.objects.all()
     # Добавим в словарь {1: {вопрос1: ответ1, вопрос2: ответ2,...}, 2:{вопрос1: ответ1,...}...}
     dic =  {}
+    HEADER_DIC = {}
+    # HEADER_DIC[0] = {}
+    # for i in q:
+    #     HEADER_DIC[0][i.question_name] = ''
     for surv_row_unique in surv_opt.distinct('survey_id'):
+        HEADER_DIC[0] = {}
         dic[surv_row_unique.survey_id] = {}
         for surv_row in surv_opt:
             if surv_row_unique.survey_id == surv_row.survey_id:
@@ -140,8 +170,12 @@ def saved_ankets(request):
                 if surv_row.option:
                     ans_sel = surv_row.option.option_name
                     dic[surv_row_unique.survey_id][q] = ans_sel
+                    HEADER_DIC[0][q] = ''
                 elif surv_row.date_answer:
                     da = surv_date.filter(date_answer_id = surv_row.date_answer_id)[0].date_answer.date_value
                     ans_sel = da
                     dic[surv_row_unique.survey_id][q] = ans_sel
-    return render(request, 'dappx/saved_ankets.html', {"surv": surv, "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
+                    HEADER_DIC[0][q] = ''
+    return render(request, 'dappx/saved_ankets.html', {"q":q,"HEADER_DIC":HEADER_DIC, "surv": surv, 
+        "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
+

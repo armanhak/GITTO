@@ -83,8 +83,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'gitto',
-        'USER': 'postgres',
-        'PASSWORD' : 'Raf226raf',
+        'USER': 'gittouser',
+        'PASSWORD' : 'git2019todb',
         'HOST' : '127.0.0.1',
         'PORT' : '5432',
     }
