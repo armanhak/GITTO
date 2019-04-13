@@ -22,15 +22,36 @@
         		  <th>{{ question }}</th>
         	   {% endfor %}
         	</tr>
-        	{% for surv_number, quest_ans in dic.items %}                
+        	{% for surv_number in surv_id_pagin %}                
         		<tr>
                     <td><input type="checkbox" name="checks[]", value={{ surv_number }}></td>
-        			{% for quest,anser in quest_ans.items %}
-        				<td name = "", value = {{surv_number}}> {{anser}}</td>
-        			{% endfor %}
+                    {% for surv_id, quest_answer in dic.items %}
+                        {% if surv_id == surv_number %}
+        			         {% for quest,anser in quest_answer.items %}
+        				        <td name = "", value = {{surv_number}}> {{anser}}</td>
+        			         {% endfor %}
+                        {% endif %}
+                    {% endfor %}
         		</tr>
       		{% endfor %}
         </table>
+        <div class="pagination">
+            <span class="step-links">
+                {% if surv_id_pagin.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ surv_id_pagin.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ surv_id_pagin.number }} of {{ surv_id_pagin.paginator.num_pages }}.
+                </span>
+
+                {% if surv_id_pagin.has_next %}
+                    <a href="?page={{ surv_id_pagin.next_page_number }}">next</a>
+                    <a href="?page={{ surv_id_pagin.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div><br>
 
         <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />        
         <input type="submit" value="Удалить" name='_delete'/>
@@ -46,6 +67,6 @@
         </table>
         <input type="button" value="Добавить анкету" class="button_active" onclick="location.href='{% url 'dappx:addprofile' %}';" />
         {% endif %} 
-         
+
         
 {% endblock %}

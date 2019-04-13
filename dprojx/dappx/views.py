@@ -10,6 +10,38 @@ from dappx.models import questions, options_selection, surveys, date_answers
 from django.db.models import F
 
 
+############################################################
+from django.views import View
+from django.core.paginator import Paginator
+# class EIndexView(View):
+ 
+#     def get(self, request):
+#         context = {}
+#         # Забираем все опубликованные статье отсортировав их по дате публикации
+#         all_articles = surv_to_dict()[0]
+#         # Создаём Paginator, в который передаём статьи и указываем, 
+#         # что их будет 10 штук на одну страницу
+#         current_page = Paginator(all_articles, 10)
+ 
+#         # Pagination в django_bootstrap3 посылает запрос вот в таком виде:
+#         # "GET /?page=2 HTTP/1.0" 200,
+#         # Поэтому нужно забрать page и попытаться передать его в Paginator, 
+#         # для нахождения страницы
+#         page = request.GET.get('page')
+#         try:
+#             # Если существует, то выбираем эту страницу
+#             context['article_lists'] = current_page.page(page)  
+#         except PageNotAnInteger:
+#             # Если None, то выбираем первую страницу
+#             context['article_lists'] = current_page.page(1)  
+#         except EmptyPage:
+#             # Если вышли за последнюю страницу, то возвращаем последнюю
+#             context['article_lists'] = current_page.page(current_page.num_pages) 
+ 
+#         return render_to_response('home/index.html', context)
+############################################################
+
+
 def index(request):
     return render(request,'dappx/index.html')
 @login_required
@@ -114,7 +146,7 @@ def del_export(request):
             return delete_anket(request)
             
         elif '_exportxlsx' in request.POST:
-            return export_xlsx()         
+            return export_xlsx(request)         
 
     
         
@@ -128,8 +160,12 @@ def saved_ankets(request):
     surv_count = surv_opt.distinct('survey_id')
     quest_table = questions.objects.all()
     dic, HEADER_DIC =surv_to_dict()
-   
-    return render(request, 'dappx/saved_ankets.html', {"quest_table":quest_table,"HEADER_DIC":HEADER_DIC, "surv": surv, 
+    surv_id_list = list(dic)
+    paginator = Paginator(surv_id_list, 5)
+    page = request.GET.get('page')
+    surv_id_pagin = paginator.get_page(page)
+    
+    return render(request, 'dappx/saved_ankets.html', {"surv_id_pagin":surv_id_pagin, "quest_table":quest_table,"HEADER_DIC":HEADER_DIC, "surv": surv, 
         "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
 def delete_anket(request):
     cheked_survs = request.POST.getlist('checks[]')
@@ -172,13 +208,11 @@ def surv_to_dict():
                     HEADER_DIC[0][q] = ''
     return dic, HEADER_DIC
     
-def export_xlsx():
+def export_xlsx(request):
     import xlsxwriter
     import io
-    
     dic, HEADER_DIC = surv_to_dict()
     output = io.BytesIO()
-    # workbook = xlsxwriter.Workbook('myd.xlsx')
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
     worksheet.set_column('B:K', 28)
@@ -186,25 +220,52 @@ def export_xlsx():
     bold = workbook.add_format({'bold': True})       
     col = 0
     row  = 0
-    for key in dic.keys():
-        if row == 0 and col==0:
-            worksheet.write(row, col, 'Id', bold)
-            worksheet.write(row+1, col, key, bold)  
-        elif row >1 and col==0:
-            worksheet.write(row, col, key, bold)
-        for qu in dic[key]:
-            if row ==0:                  
-                worksheet.write(row, col+1, qu, bold)
-                worksheet.write(row+1, col+1, dic[key][qu])
-                col+=1
-            else: 
-                worksheet.write(row, col+1, dic[key][qu])
-                col+=1
-        if row ==0:
-            row+=2
-        else:
-            row+=1
-        col = 0
+    cheked_survs = request.POST.getlist('checks[]')
+
+    if len(cheked_survs) > 0:
+        for i in cheked_survs:
+            i=int(i)
+            if i in dic.keys():
+                if row == 0 and col==0:
+                    worksheet.write(row, col, 'Id', bold)
+                    worksheet.write(row+1, col, i, bold)
+                elif row >1 and col==0:
+                    worksheet.write(row, col, i, bold)
+                for qu in dic[i]:
+                    if row ==0:                  
+                        worksheet.write(row, col+1, qu, bold)
+                        worksheet.write(row+1, col+1, dic[i][qu])
+                        col+=1
+                    else:
+                        worksheet.write(row, col+1, dic[i][qu])
+                        col+=1
+                if row ==0:
+                    row+=2
+                else:
+                    row+=1
+                col = 0   
+   
+      
+    else:  
+        for key in dic.keys():
+            if row == 0 and col==0:
+                worksheet.write(row, col, 'Id', bold)
+                worksheet.write(row+1, col, key, bold)  
+            elif row >1 and col==0:
+                worksheet.write(row, col, key, bold)
+            for qu in dic[key]:
+                if row ==0:                  
+                    worksheet.write(row, col+1, qu, bold)
+                    worksheet.write(row+1, col+1, dic[key][qu])
+                    col+=1
+                else: 
+                    worksheet.write(row, col+1, dic[key][qu])
+                    col+=1
+            if row ==0:
+                row+=2
+            else:
+                row+=1
+            col = 0
     workbook.close()
     output.seek(0)
     filename = 'gitto-profile.xlsx'
