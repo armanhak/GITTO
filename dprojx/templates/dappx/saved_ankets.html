@@ -33,14 +33,14 @@
         </table>
 
         <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />        
-        <input type="submit" value="Удалить"/>
-        <input type="button" value="Сохранить в xlsx" class="button_active"/>
+        <input type="submit" value="Удалить" name='_delete'/>
+        <input type="submit" value="Сохранить в xlsx" name="_exportxlsx"/>
         </form>
 
         {% else %}
             <h1>Нет сохраненных анкет</h1>
             <table border="1" width="70%">
-            {% for i in q %}
+            {% for i in quest_table %}
                 <th>{{ i.question_name }}</th>
             {% endfor %}
         </table>

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+import xlsxwriter
 from dappx.forms import UserForm,UserProfileInfoForm
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
@@ -68,40 +68,16 @@ def resercher_doctor(request):
 @login_required
 def doctor(request):
     return render(request, 'dappx/doctor.html')
-    # surv = surveys.objects.all()
-    # #Select * from surveys left join questions, question это внешный ключ в surveys
-    # surv_quest = surveys.objects.select_related('question')
-    # surv_date = surveys.objects.select_related('date_answer')
-    # surv_opt = surveys.objects.select_related('option')
-    # surv_count = surv_opt.distinct('survey_id')
-    # # Добавим в словарь {1: {вопрос1: ответ1, вопрос2: ответ2,...}, 2:{вопрос1: ответ1,...}...}
-    # dic =  {}
-    # for surv_row_unique in surv_opt.distinct('survey_id'):
-    #     dic[surv_row_unique.survey_id] = {}
-    #     for surv_row in surv_opt:
-    #         if surv_row_unique.survey_id == surv_row.survey_id:
-    #             q = surv_quest.filter(question_id = surv_row.question_id)[0].question.question_name
-    #             if surv_row.option:
-    #                 ans_sel = surv_row.option.option_name
-    #                 dic[surv_row_unique.survey_id][q] = ans_sel
-    #             elif surv_row.date_answer:
-    #                 da = surv_date.filter(date_answer_id = surv_row.date_answer_id)[0].date_answer.date_value
-    #                 ans_sel = da
-    #                 dic[surv_row_unique.survey_id][q] = ans_sel
-    # return render(request, 'dappx/doctor.html', {"surv": surv, "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
+    
 @login_required
 def resercher(request):
     return render(request, 'dappx/resercher.html')
 @login_required
-# def addprofile(request):
-
-
 def addprofile(request):
     quest = questions.objects.all()
     option = options_selection.objects.all()
     return render(request, 'dappx/add_anketa.html', {"quest": quest, 'option': option})
 @login_required
-
 def db_add_profile(request):
     if request.method == "POST":
 
@@ -132,17 +108,13 @@ def db_add_profile(request):
         return render(request, 'dappx/doctor.html')
         # return HttpResponse("Данные успешно загружены в базу данных")
 @login_required
-def deletes(request):    
-    if request.method == "POST":        
-        cheked_survs = request.POST.getlist('checks[]')
-        if len(cheked_survs) > 0:
-            for i in cheked_survs:
-                s = surveys.objects.filter(survey_id = i)
-                s.delete()
-            # return HttpResponse("erfws")
-            return render(request, 'dappx/doctor.html')
-        if len(cheked_survs) ==0:
-            return render(request, "dappx/doctor.html")
+def del_export(request):    
+    if request.method == "POST":
+        if '_delete' in request.POST:            
+            return delete_anket(request)
+            
+        elif '_exportxlsx' in request.POST:
+            return export_xlsx()         
 
     
         
@@ -154,13 +126,35 @@ def saved_ankets(request):
     surv_date = surveys.objects.select_related('date_answer')
     surv_opt = surveys.objects.select_related('option')
     surv_count = surv_opt.distinct('survey_id')
+    quest_table = questions.objects.all()
+    dic, HEADER_DIC =surv_to_dict()
+   
+    return render(request, 'dappx/saved_ankets.html', {"quest_table":quest_table,"HEADER_DIC":HEADER_DIC, "surv": surv, 
+        "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
+def delete_anket(request):
+    cheked_survs = request.POST.getlist('checks[]')
+    if len(cheked_survs) > 0:
+        for i in cheked_survs:
+            s = surveys.objects.filter(survey_id = i)
+            s.delete()
+                # return HttpResponse("erfws")
+        return render(request, 'dappx/doctor.html')
+    if len(cheked_survs) ==0:
+        return render(request, "dappx/doctor.html")
+
+#return анкеты в словаре и отдельный header_dict заголовок
+def surv_to_dict():
+    surv = surveys.objects.all()
+    #Select * from surveys left join questions, question это внешный ключ в surveys
+    surv_quest = surveys.objects.select_related('question')
+    surv_date = surveys.objects.select_related('date_answer')
+    surv_opt = surveys.objects.select_related('option')
+    surv_count = surv_opt.distinct('survey_id')
     q = questions.objects.all()
     # Добавим в словарь {1: {вопрос1: ответ1, вопрос2: ответ2,...}, 2:{вопрос1: ответ1,...}...}
     dic =  {}
-    HEADER_DIC = {}
-    # HEADER_DIC[0] = {}
-    # for i in q:
-    #     HEADER_DIC[0][i.question_name] = ''
+    #
+    HEADER_DIC = {}    
     for surv_row_unique in surv_opt.distinct('survey_id'):
         HEADER_DIC[0] = {}
         dic[surv_row_unique.survey_id] = {}
@@ -176,6 +170,45 @@ def saved_ankets(request):
                     ans_sel = da
                     dic[surv_row_unique.survey_id][q] = ans_sel
                     HEADER_DIC[0][q] = ''
-    return render(request, 'dappx/saved_ankets.html', {"q":q,"HEADER_DIC":HEADER_DIC, "surv": surv, 
-        "surv_quest": surv_quest, "surv_opt":surv_opt, "dic": dic})
-
+    return dic, HEADER_DIC
+    
+def export_xlsx():
+    import xlsxwriter
+    import io
+    
+    dic, HEADER_DIC = surv_to_dict()
+    output = io.BytesIO()
+    # workbook = xlsxwriter.Workbook('myd.xlsx')
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    worksheet.set_column('B:K', 28)
+    worksheet.set_column('A:A', 3)
+    bold = workbook.add_format({'bold': True})       
+    col = 0
+    row  = 0
+    for key in dic.keys():
+        if row == 0 and col==0:
+            worksheet.write(row, col, 'Id', bold)
+            worksheet.write(row+1, col, key, bold)  
+        elif row >1 and col==0:
+            worksheet.write(row, col, key, bold)
+        for qu in dic[key]:
+            if row ==0:                  
+                worksheet.write(row, col+1, qu, bold)
+                worksheet.write(row+1, col+1, dic[key][qu])
+                col+=1
+            else: 
+                worksheet.write(row, col+1, dic[key][qu])
+                col+=1
+        if row ==0:
+            row+=2
+        else:
+            row+=1
+        col = 0
+    workbook.close()
+    output.seek(0)
+    filename = 'gitto-profile.xlsx'
+    response = HttpResponse(output,
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    return response

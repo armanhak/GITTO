@@ -14,6 +14,5 @@ urlpatterns=[
 
     url(r'resercher_doctor/doctor/addProfile/saved_ankets/$', views.saved_ankets, name='saved_ankets'),
     #Ccылка для удаления
-    url(r'^resercher_doctor/doctor/addProfile/saved_ankets/delete$', views.deletes, name = 'del'),
-    # (?# url(r'^resercher_doctor/doctor/addProfile/saved_ankets/exp$', views.exportFile, name = 'exp'),)
+    url(r'^resercher_doctor/doctor/addProfile/saved_ankets/delete$', views.del_export, name = 'del'),
 ]
