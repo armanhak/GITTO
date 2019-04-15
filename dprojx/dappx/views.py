@@ -139,6 +139,7 @@ def db_add_profile(request):
         # question_answer =request.POST['value']#option_id or row_text_answer_id or date_answer_id
         return render(request, 'dappx/doctor.html')
         # return HttpResponse("Данные успешно загружены в базу данных")
+
 @login_required
 def del_export(request):    
     if request.method == "POST":
@@ -147,7 +148,8 @@ def del_export(request):
             
         elif '_exportxlsx' in request.POST:
             return export_xlsx(request)         
-
+        elif '_exportpdf' in request.POST:
+            return export_pdf(request)
     
         
 @login_required
@@ -243,7 +245,7 @@ def export_xlsx(request):
                     row+=2
                 else:
                     row+=1
-                col = 0   
+                col = 0
    
       
     else:  
@@ -272,4 +274,40 @@ def export_xlsx(request):
     response = HttpResponse(output,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    return response
+
+def export_pdf(request):
+    from fpdf import FPDF
+    import io
+    dic, HEADER_DIC = surv_to_dict()
+    output = io.BytesIO()
+
+    cheked_survs = request.POST.getlist('checks[]')
+    pdf = FPDF()
+    pdf.add_font('DejaVu', '', r"c:\WINDOWS\Fonts\DejaVuSansCondensed.ttf", uni=True)
+    pdf.set_font('DejaVu', '', 14)
+    if len(cheked_survs) > 0:   
+        
+        for i in cheked_survs:
+            i=int(i)
+            if i in dic.keys():                
+                pdf.add_page()
+                pdf.cell(200, 10, txt='Анкета пациента {}'.format(i), ln=1, align="C")
+                for q, a in dic[i].items():
+                    q_a='{0} - {1}'.format(q, a)
+                    pdf.cell(0, 10, txt=q_a, ln=1)       
+        
+    else:
+        for surv_id in dic.keys():                
+            pdf.add_page()
+            pdf.cell(200, 10, txt='Анкета пациента {}'.format(surv_id), ln=1, align="C")
+            for q, a in dic[surv_id].items():
+                q_a='{0} - {1}'.format(q, a)
+                pdf.cell(0, 10, txt=q_a, ln=1)
+        
+    byte_string = pdf.output(dest='S').encode('latin-1')  # Probably what you want
+    stream = io.BytesIO(byte_string)  # If you really need a BytesIO
+        
+    response = HttpResponse(byte_string, content_type='application/pdf')
+    response['Content-Disposition'] = "attachment; filename=gitto-profile.pdf"
     return response

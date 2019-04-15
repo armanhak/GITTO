@@ -9,8 +9,7 @@
                 }
             }
         
-        </script>
-        
+        </script>        
 
       <h1>Сохраненные анкеты: </h1>
       
@@ -53,9 +52,13 @@
             </span>
         </div><br>
 
-        <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />        
+        <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />
+
+     
+        
         <input type="submit" value="Удалить" name='_delete'/>
         <input type="submit" value="Сохранить в xlsx" name="_exportxlsx"/>
+        <input type="submit" value="Сохранить в pdf" name="_exportpdf"/>
         </form>
 
         {% else %}
