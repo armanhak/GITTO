@@ -1,5 +1,6 @@
 {% extends "dappx/index.html" %}
 {% block body_block %}
+
     {% if surv.count > 0 %}
         <script language="JavaScript">
             function toggle(source) {
@@ -51,7 +52,7 @@
                 {% endif %}
             </span>
         </div><br>
-
+        {% csrf_token %}
         <input type="button" value="Назад" class="button_active" onclick="location.href='{% url 'dappx:doctor' %}';" />
 
      
